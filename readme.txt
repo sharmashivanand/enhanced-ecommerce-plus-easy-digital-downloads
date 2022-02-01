@@ -1,10 +1,10 @@
 === Enhanced Ecommerce Plus for Easy Digital Downloads ===
-Contributors: varun21
+Contributors: varun21, ruchika_wp
 Donate link: https://www.converticacommerce.com?item_name=Donation%20for%20edd%20enhanced%20ecommerce%20tracking%20plus&cmd=_xclick&currency_code=USD&business=shivanand@converticacommerce.com
 Tags: easy digital downloads, edd, analytics, marketing
 Requires at least: 4.0
 Tested up to: 5.9
-Stable tag: 1.0
+Stable tag: 1.1
 Requires PHP: 5.6
 License: MIT
 License URI: https://opensource.org/licenses/MIT

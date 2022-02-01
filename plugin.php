@@ -10,11 +10,13 @@
  * @wordpress-plugin
  * Plugin Name: Enhanced Ecommerce Plus for Easy Digital Downloads
  * Description: Implement Google Analytics Enhanced Ecommerce Tracking on your Easy Digital Downloads store
- * Version:     1.0
+ * Version:     1.1
  * Author:      Shivanand Sharma
+ * Author URI:  https://converticacommerce.com
  * Text Domain: eepedd
  * License:     MIT
  * License URI: https://opensource.org/licenses/MIT
+ * Plugin URI:  https://wp-social-proof.com
  */
 
 /**
