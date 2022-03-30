@@ -429,8 +429,11 @@ final class EEPEDD_Init {
 	}
 
 	function fire( $params, $debug = true ) {
-
+		$debug = apply_filters( 'eepedd_debug', false );
 		if ( current_user_can( 'administrator' ) || ! $property_id = $this->get_setting( 'property_id' ) ) {
+			if ( $debug ) {
+				$this->flog( 'Either use is Administrator or property_id not set' );
+			}
 			return;
 		}
 
@@ -474,6 +477,9 @@ final class EEPEDD_Init {
 		
 		// Requests without ID are ignored by GA
 		if ( false == $body['cid'] ) {
+			if ( $debug ) {
+				$this->flog( 'Empty cid' );
+			}
 			return false;
 		}
 
@@ -497,7 +503,9 @@ final class EEPEDD_Init {
 		if ( $debug ) { // DEBUG STUFF DOESN'T SHOW UP IN GA REPORTS
 			// Important: hits sent to the Measurement Protocol Validation Server will not show up in reports. They are for debugging only.
 			// https://developers.google.com/analytics/devguides/collection/protocol/v1/validating-hits
-			// $this->flog( $body );
+			@update_post_meta( $payment_id, '_eepedd_debug_pre_fire', $body );
+			$this->flog( 'Sending body to GA' );
+			$this->flog( $body );
 			$response = wp_remote_post(
 				$this->ga_debug_measurement_ep,
 				array(
@@ -506,7 +514,10 @@ final class EEPEDD_Init {
 					'body'     => $body,
 				)
 			);
-			// $this->flog( wp_remote_retrieve_body( $response ) );
+			$response = wp_remote_retrieve_body( $response );
+			@update_post_meta( $payment_id, '_eepedd_debug_post_fire', $response );
+			$this->flog( 'Received response from GA' );
+			$this->flog( $response );
 		}
 	}
 
