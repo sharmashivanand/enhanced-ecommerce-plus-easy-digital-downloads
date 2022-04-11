@@ -310,8 +310,11 @@ final class EEPEDD_Init {
 		}
 	}
 
-	function transaction( $payment_id, $payment, $customer ) {
-
+	function transaction( $payment_id, $payment = '', $customer = '' ) {
+		$this->flog( __FUNCTION__ . ' init' );
+		$this->flog( $payment_id );
+		$this->flog( $payment );
+		$this->flog( $customer );
 		if ( get_post_meta( $payment_id, '_eepedd_tracked', true ) ) {
 			return;
 		}
@@ -342,9 +345,10 @@ final class EEPEDD_Init {
 			$items
 		);
 
-		@update_post_meta( $payment_id, '_eepedd_tracked', 'complete' );
 		$this->fire( $parms );
-
+		@update_post_meta( $payment_id, '_eepedd_tracked', 'complete' );
+		$this->flog( $parms );
+		$this->flog( __FUNCTION__ . ' end' );
 	}
 
 	function refund( $payment ) {
@@ -428,12 +432,13 @@ final class EEPEDD_Init {
 		$this->fire( $parms );
 	}
 
-	function fire( $params, $debug = true ) {
-		$debug = apply_filters( 'eepedd_debug', false );
+	function fire( $params ) {
+		$this->flog( __FUNCTION__ . ' init' );
+		$this->flog( $params );
 		if ( current_user_can( 'administrator' ) || ! $property_id = $this->get_setting( 'property_id' ) ) {
-			if ( $debug ) {
-				$this->flog( 'Either use is Administrator or property_id not set' );
-			}
+			$this->flog( 'Either user is Administrator or property_id not set' );
+			$this->flog( current_user_can( 'administrator' ) );
+			$this->flog( $this->get_setting( 'property_id' ) );
 			return;
 		}
 
@@ -450,7 +455,7 @@ final class EEPEDD_Init {
 		$ip = $this->get_ip();
 
 		$user_language = isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? explode( ',', $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) : array();
-		$user_language = reset( $user_language );
+		$user_language = strtolower( reset( $user_language ) );
 
 		$default_body = array(
 			'v'   => '1', // Protocol Version
@@ -460,13 +465,13 @@ final class EEPEDD_Init {
 			'ni'  => true, // Non-Interaction Hit
 			// 'aip' => 1, // Anonymize IP
 			'dh'  => parse_url( site_url(), PHP_URL_HOST ), // Document Host Name
-			'dp'  => $_SERVER['REQUEST_URI'], // Document Path
+			'dp'  => ! empty( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '', // Document Path
 			'dt'  => get_the_title(), // Document Title
 
 			// Hits that usually also go with JS
 			'ul'  => $user_language, // User Language
 			'uip' => $ip, // IP Override
-			'ua'  => $_SERVER['HTTP_USER_AGENT'], // User Agent Override
+			'ua'  => ! empty( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : 'UNKNOWN_HTTP_USER_AGENT', // User Agent Override
 		);
 
 		$body = wp_parse_args( $body, $default_body );
@@ -474,12 +479,10 @@ final class EEPEDD_Init {
 		foreach ( $body as $key => $value ) {
 			$body[ $key ] = $this->sanitize( $value );
 		}
-		
+
 		// Requests without ID are ignored by GA
 		if ( false == $body['cid'] ) {
-			if ( $debug ) {
-				$this->flog( 'Empty cid' );
-			}
+			$this->flog( 'Empty cid' );
 			return false;
 		}
 
@@ -500,29 +503,31 @@ final class EEPEDD_Init {
 
 		// For the future, implement debug setting: a way to validate hits and see the results
 
-		if ( $debug ) { // DEBUG STUFF DOESN'T SHOW UP IN GA REPORTS
-			// Important: hits sent to the Measurement Protocol Validation Server will not show up in reports. They are for debugging only.
-			// https://developers.google.com/analytics/devguides/collection/protocol/v1/validating-hits
-			@update_post_meta( $payment_id, '_eepedd_debug_pre_fire', $body );
-			$this->flog( 'Sending body to GA' );
-			$this->flog( $body );
-			$response = wp_remote_post(
-				$this->ga_debug_measurement_ep,
-				array(
-					'method'   => 'POST',
-					'blocking' => true, // because we need the results for (optionally) pushing into the log
-					'body'     => $body,
-				)
-			);
-			$response = wp_remote_retrieve_body( $response );
-			@update_post_meta( $payment_id, '_eepedd_debug_post_fire', $response );
-			$this->flog( 'Received response from GA' );
-			$this->flog( $response );
-		}
+		// DEBUG STUFF DOESN'T SHOW UP IN GA REPORTS
+		// Important: hits sent to the Measurement Protocol Validation Server will not show up in reports. They are for debugging only.
+		// https://developers.google.com/analytics/devguides/collection/protocol/v1/validating-hits
+		// $eepedd_debug_pre_fire = @update_post_meta( $payment_id, '_eepedd_debug_pre_fire', $body );
+		$this->flog( 'Sending body to GA' );
+		$this->flog( $body );
+		$response = wp_remote_post(
+			$this->ga_debug_measurement_ep,
+			array(
+				'method'   => 'POST',
+				'blocking' => true, // because we need the results for (optionally) pushing into the log
+				'body'     => $body,
+			)
+		);
+		$response = wp_remote_retrieve_body( $response );
+		// $eepedd_debug_post_fire = @update_post_meta( $payment_id, '_eepedd_debug_post_fire', $response );
+		$this->flog( 'Received response from GA' );
+		$this->flog( $response );
+
 	}
 
 	function sanitize( $str ) {
-		$str = html_entity_decode( $str );  // convert all html entities back to the actual characters
+		$this->flog( __FUNCTION__ );
+		$this->flog( $str );
+		$str = @html_entity_decode( $str );  // convert all html entities back to the actual characters
 		$str = str_replace( '&', '%26', $str ); // replace & with a space else GA interprets them as parameters and throws warnings about invalid parameters
 		return $str;
 	}
@@ -544,7 +549,7 @@ final class EEPEDD_Init {
 			};
 		};
 
-		return false;
+		return '127.0.0.1'; // let's return a valid IP at least so that it doesn't break GA logging just in case
 	}
 
 
@@ -558,11 +563,18 @@ final class EEPEDD_Init {
 				'cid'         => $cid1 . '.' . $cid2,
 			);
 			$cid = $contents['cid'];
+			$this->flog( 'Returning cid from' );
+			$this->flog( $cid );
 			return $cid;
-		} elseif ( ! empty( $payment_id ) && $saved_cid = get_post_meta( $payment_id, '_eepedd_cid' ) ) {
+		} elseif ( ! empty( $payment_id ) && $saved_cid = get_post_meta( $payment_id, '_eepedd_cid', true ) ) {
+			$this->flog( 'Returning _eepedd_cid from post meta' );
+			$this->flog( $saved_cid );
 			return $saved_cid;
 		} else {
-			return $this->gaGenUUID();
+			$cid = $this->gaGenUUID();
+			$this->flog( 'Returning generated cid' );
+			$this->flog( $cid );
+			return $cid;
 		}
 	}
 
@@ -702,15 +714,17 @@ final class EEPEDD_Init {
 		echo '</pre>';
 	}
 
-	function flog( $str, $file = 'log.log', $timestamp = false ) {
-		$date = date( 'Ymd-G:i:s' ); // 20171231-23:59:59
-		$date = $date . '-' . microtime( true );
-		$file = $this->dir . sanitize_text_field( $file );
-		if ( $timestamp ) {
-			file_put_contents( $file, PHP_EOL . $date, FILE_APPEND | LOCK_EX );
+	function flog( $str, $file = 'log.log', $timestamp = true ) {
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			$date = date( 'Ymd-G:i:s' ); // 20171231-23:59:59
+			$date = $date . '-' . microtime( true );
+			$file = $this->dir . sanitize_text_field( $file );
+			if ( $timestamp ) {
+				file_put_contents( $file, PHP_EOL . $date, FILE_APPEND | LOCK_EX );
+			}
+			$str = print_r( $str, true );
+			file_put_contents( $file, PHP_EOL . $str, FILE_APPEND | LOCK_EX );
 		}
-		$str = print_r( $str, true );
-		file_put_contents( $file, PHP_EOL . $str, FILE_APPEND | LOCK_EX );
 	}
 
 }
