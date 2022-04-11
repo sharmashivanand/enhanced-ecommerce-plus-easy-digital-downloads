@@ -352,8 +352,8 @@ final class EEPEDD_Init {
 	}
 
 	function refund( $payment ) {
-
-		if ( get_post_meta( $payment->ID, '_eepedd_tracked', true ) ) {
+		$this->flog( __FUNCTION__ . ' init' );
+		if ( 'refund' == get_post_meta( $payment->ID, '_eepedd_tracked', true ) ) {
 			return;
 		}
 
@@ -365,9 +365,9 @@ final class EEPEDD_Init {
 			'pa' => 'refund', // Product Action
 		);
 
-		@update_post_meta( $payment_id, '_eepedd_tracked', 'refund' );
-
 		$this->fire( $parms );
+		@update_post_meta( $payment_id, '_eepedd_tracked', 'refund' );
+		$this->flog( __FUNCTION__ . ' end' );
 
 	}
 
@@ -435,9 +435,10 @@ final class EEPEDD_Init {
 	function fire( $params ) {
 		$this->flog( __FUNCTION__ . ' init' );
 		$this->flog( $params );
-		if ( current_user_can( 'administrator' ) || ! $property_id = $this->get_setting( 'property_id' ) ) {
-			$this->flog( 'Either user is Administrator or property_id not set' );
-			$this->flog( current_user_can( 'administrator' ) );
+		if ( ! $property_id = $this->get_setting( 'property_id' ) ) {
+			// $this->flog( 'Either user is Administrator or property_id not set' );
+			// $this->flog( current_user_can( 'administrator' ) );
+			$this->flog( 'Property_id not set' );
 			$this->flog( $this->get_setting( 'property_id' ) );
 			return;
 		}
@@ -525,7 +526,7 @@ final class EEPEDD_Init {
 	}
 
 	function sanitize( $str ) {
-		$this->flog( __FUNCTION__ );
+		$this->flog( __FUNCTION__ . ' init' );
 		$this->flog( $str );
 		$str = @html_entity_decode( $str );  // convert all html entities back to the actual characters
 		$str = str_replace( '&', '%26', $str ); // replace & with a space else GA interprets them as parameters and throws warnings about invalid parameters
