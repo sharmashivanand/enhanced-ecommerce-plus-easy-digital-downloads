@@ -477,6 +477,8 @@ final class EEPEDD_Init {
 
 		$body = wp_parse_args( $body, $default_body );
 
+		$this->flog( 'Sanitizing body' );
+		$this->flog( $body );
 		foreach ( $body as $key => $value ) {
 			$body[ $key ] = $this->sanitize( $value );
 		}
@@ -526,7 +528,7 @@ final class EEPEDD_Init {
 	}
 
 	function sanitize( $str ) {
-		$this->flog( __FUNCTION__ . ' init' );
+		
 		$this->flog( $str );
 		$str = @html_entity_decode( $str );  // convert all html entities back to the actual characters
 		$str = str_replace( '&', '%26', $str ); // replace & with a space else GA interprets them as parameters and throws warnings about invalid parameters
@@ -715,16 +717,16 @@ final class EEPEDD_Init {
 		echo '</pre>';
 	}
 
-	function flog( $str, $file = 'log.log', $timestamp = true ) {
+	function flog( $str, $file = 'log.log', $timestamp = false ) {
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 			$date = date( 'Ymd-G:i:s' ); // 20171231-23:59:59
 			$date = $date . '-' . microtime( true );
 			$file = $this->dir . sanitize_text_field( $file );
 			if ( $timestamp ) {
-				file_put_contents( $file, PHP_EOL . $date, FILE_APPEND | LOCK_EX );
+				@file_put_contents( $file, PHP_EOL . $date, FILE_APPEND | LOCK_EX );
 			}
 			$str = print_r( $str, true );
-			file_put_contents( $file, PHP_EOL . $str, FILE_APPEND | LOCK_EX );
+			@file_put_contents( $file, PHP_EOL . $str, FILE_APPEND | LOCK_EX );
 		}
 	}
 

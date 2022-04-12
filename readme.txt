@@ -44,6 +44,21 @@ If you haven't already, turn on enhanced ecommerce for a view: https://support.g
 
 == Changelog ==
 
+= 1.1 =
+* Feature: Applied verbose logging if WP_DEBUG is turned on.
+* Bugfix: Some transaction not logging
+* Bugfix: Refunds not logging
+
+= 1.0 =
+* Initial release
+
 
 == Upgrade Notice ==
 
+= 1.1 =
+* Feature: Applied verbose logging if WP_DEBUG is turned on.
+* Bugfix: Some transaction not logging
+* Bugfix: Refunds not logging
+
+= 1.0 =
+* Initial release
