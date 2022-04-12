@@ -313,8 +313,6 @@ final class EEPEDD_Init {
 	function transaction( $payment_id, $payment = '', $customer = '' ) {
 		$this->flog( __FUNCTION__ . ' init' );
 		$this->flog( $payment_id );
-		$this->flog( $payment );
-		$this->flog( $customer );
 		if ( get_post_meta( $payment_id, '_eepedd_tracked', true ) ) {
 			return;
 		}
@@ -347,7 +345,6 @@ final class EEPEDD_Init {
 
 		$this->fire( $parms );
 		@update_post_meta( $payment_id, '_eepedd_tracked', 'complete' );
-		$this->flog( $parms );
 		$this->flog( __FUNCTION__ . ' end' );
 	}
 
@@ -436,8 +433,7 @@ final class EEPEDD_Init {
 		$this->flog( __FUNCTION__ . ' init' );
 		$this->flog( $params );
 		if ( ! $property_id = $this->get_setting( 'property_id' ) ) {
-			// $this->flog( 'Either user is Administrator or property_id not set' );
-			// $this->flog( current_user_can( 'administrator' ) );
+			// This thing should work for admins etc. too else refunds etc. wouldn't fire
 			$this->flog( 'Property_id not set' );
 			$this->flog( $this->get_setting( 'property_id' ) );
 			return;
@@ -472,7 +468,7 @@ final class EEPEDD_Init {
 			// Hits that usually also go with JS
 			'ul'  => $user_language, // User Language
 			'uip' => $ip, // IP Override
-			'ua'  => ! empty( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : 'UNKNOWN_HTTP_USER_AGENT', // User Agent Override
+			'ua'  => ! empty( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : 'Unknown_UA', // User Agent Override
 		);
 
 		$body = wp_parse_args( $body, $default_body );
@@ -510,25 +506,25 @@ final class EEPEDD_Init {
 		// Important: hits sent to the Measurement Protocol Validation Server will not show up in reports. They are for debugging only.
 		// https://developers.google.com/analytics/devguides/collection/protocol/v1/validating-hits
 		// $eepedd_debug_pre_fire = @update_post_meta( $payment_id, '_eepedd_debug_pre_fire', $body );
-		$this->flog( 'Sending body to GA' );
-		$this->flog( $body );
-		$response = wp_remote_post(
-			$this->ga_debug_measurement_ep,
-			array(
-				'method'   => 'POST',
-				'blocking' => true, // because we need the results for (optionally) pushing into the log
-				'body'     => $body,
-			)
-		);
-		$response = wp_remote_retrieve_body( $response );
-		// $eepedd_debug_post_fire = @update_post_meta( $payment_id, '_eepedd_debug_post_fire', $response );
-		$this->flog( 'Received response from GA' );
-		$this->flog( $response );
-
-	}
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			$this->flog( 'Sending body to GA' );
+			$this->flog( $body );
+			$response     = wp_remote_post(
+				$this->ga_debug_measurement_ep,
+				array(
+					'method'   => 'POST',
+					'blocking' => true, // because we need the results for (optionally) pushing into the log
+					'body'     => $body,
+				)
+			);
+			$response = wp_remote_retrieve_body( $response );
+			// $eepedd_debug_post_fire = @update_post_meta( $payment_id, '_eepedd_debug_post_fire', $response );
+			$this->flog( 'Received response from GA' );
+			$this->flog( $response );
+		} // if
+	} // fn
 
 	function sanitize( $str ) {
-		
 		$this->flog( $str );
 		$str = @html_entity_decode( $str );  // convert all html entities back to the actual characters
 		$str = str_replace( '&', '%26', $str ); // replace & with a space else GA interprets them as parameters and throws warnings about invalid parameters
@@ -552,7 +548,7 @@ final class EEPEDD_Init {
 			};
 		};
 
-		return '127.0.0.1'; // let's return a valid IP at least so that it doesn't break GA logging just in case
+		return false; // let's return a valid IP at least so that it doesn't break GA logging just in case
 	}
 
 
@@ -719,17 +715,16 @@ final class EEPEDD_Init {
 
 	function flog( $str, $file = 'log.log', $timestamp = false ) {
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			$date = date( 'Ymd-G:i:s' ); // 20171231-23:59:59
-			$date = $date . '-' . microtime( true );
 			$file = $this->dir . sanitize_text_field( $file );
 			if ( $timestamp ) {
+				$date = date( 'Y-m-d-G:i:s' ); // 2022-04-12-6:19:43
+				$date = $date . '-' . microtime( true ); // 2022-04-12-6:19:43-1649744383.8797
 				@file_put_contents( $file, PHP_EOL . $date, FILE_APPEND | LOCK_EX );
 			}
 			$str = print_r( $str, true );
 			@file_put_contents( $file, PHP_EOL . $str, FILE_APPEND | LOCK_EX );
 		}
 	}
-
 }
 
 function eepedd() {
