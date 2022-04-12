@@ -4,7 +4,7 @@ Donate link: https://www.converticacommerce.com?item_name=Donation%20for%20edd%2
 Tags: easy digital downloads, edd, analytics, marketing
 Requires at least: 4.0
 Tested up to: 5.9
-Stable tag: 1.1
+Stable tag: 1.2
 Requires PHP: 5.6
 License: MIT
 License URI: https://opensource.org/licenses/MIT
