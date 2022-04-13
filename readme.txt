@@ -41,6 +41,10 @@ This plugin is unrelated to any other plugins implementing Google Analytics. You
 
 If you haven't already, turn on enhanced ecommerce for a view: https://support.google.com/analytics/answer/6032539
 
+== Screenshots ==
+
+1. Plugin Settings.
+2. Data in Google™ Analytics
 
 == Changelog ==
 

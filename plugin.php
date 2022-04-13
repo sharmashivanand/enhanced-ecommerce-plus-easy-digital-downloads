@@ -525,7 +525,7 @@ final class EEPEDD_Init {
 	} // fn
 
 	function sanitize( $str ) {
-		$this->flog( $str );
+		// $this->flog( $str );
 		$str = @html_entity_decode( $str );  // convert all html entities back to the actual characters
 		$str = str_replace( '&', '%26', $str ); // replace & with a space else GA interprets them as parameters and throws warnings about invalid parameters
 		return $str;
