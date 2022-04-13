@@ -44,7 +44,10 @@ If you haven't already, turn on enhanced ecommerce for a view: https://support.g
 == Screenshots ==
 
 1. Plugin Settings.
-2. Data in Google™ Analytics
+2. Ecommerce Overview in Google™ Analytics
+3. Shopping Behaviour Analysis in Google™ Analytics
+4. Product Performance in Google™ Analytics
+5. Sales Performance in Google™ Analytics
 
 == Changelog ==
 
