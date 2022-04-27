@@ -15,7 +15,22 @@ Enhanced Ecommerce Tracking in Google Analytics for Easy Digital Downloads
 
 A simple yet powerful plugin that let's you benifit from Enhanced Ecommerce Tracking in Google Analytics for Easy Digital Downloads.
 
-This plugin has no dependencies and works independently of any other Google Analytics tracking you have on the site without any duplication.
+## This plugin has no dependencies and works independently of any other Google Analytics tracking you have on the site without any duplication.
+
+#### What does this plugin do?
+Enhanced Ecommerce Plus for Easy Digital Downloads allows you to track key ecommerce metrix in Google Analytics™ so that you can identify:
+1. Conversion Rates
+1. Average Order Value
+1. Shopping Behavior
+1. Checkout Behavior
+1. Sessions with Product View, Add to Cart, Cart Abandonment, Check-Out, Check-Out Abandonment
+1. Dropoffs
+1. Adandonments
+1. Product Performance
+1. Product Actions
+1. ... and much more ...
+
+This helps you optimize your EDD store for better sales and helps serve your potential buyers better.
 
 == Installation ==
 
